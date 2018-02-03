@@ -23,7 +23,7 @@ There a few concepts and assumptions that need to be described before we can beg
 The assumption here is that we are working in a world of cooperating services that maintain their own state -- no shared databases.  If you need information, you go the service to get it.  When a new entity is introduced into the system, the service issues the identifier for it.
 
 === Explicit Context
-In the book, Nygard suggest the traditional identifiers are limiting to use in current architectures because they do not carry enough context to allow a client to locate the authoritative system.  Using a URL provides more context, giving the caller the ability to "tug" on the URL and get more information.
+In the book, Nygard suggest the traditional identifiers are limiting to use because they do not carry enough context to allow a client to locate the authoritative system.  Using a URL provides more context, giving the caller the ability to "tug" on the URL and get more information.
 
 .Identifier Comparison
 [source,json]
@@ -34,85 +34,55 @@ In the book, Nygard suggest the traditional identifiers are limiting to use in c
 }
 ----
 
-* an https://aws.amazon.com/[AWS] account
-* an SSH client
-* familiarity with https://aws.amazon.com/ec2/[EC2]
+=== URL Dualism
+URL Dualism is a variation of Explicit Context that emphasizes the fact that a URL can treated two ways. First, it can be treated as an opaque identifier -- just a collection of characters.  It can also be dereferenced and exchanged for more information.  In a REST service, dereferencing an identifier might get you this representation.
 
-IMPORTANT: we will be using the same EC2 instances for the labs so always have your SSH key available when we meet.
-
-TIP: Learners running Windows have had good success with http://gitforwindows.org/[Git BASH].
-
-== Lab 01: Setting Up The Testing Environment
-In order to give Ansible inventory to work on, we need to setup several small EC2 instances.  In your Amazon account, create the following:
-
-. a new SSH key pair
-. an Ubuntu `t2.nano` instance named Ansible Control
-. an Ubuntu `t2.nano` instance named Alpha
-. an Ubuntu `t2.nano` instance named Bravo
-. an Amazon Linux `t2.nano` instance named Charlie
-. an Amazon Linux `t2.nano` instance named Delta
-
-IMPORTANT: Ensure that the security group on the instances allows inbound SSH access (port 22).
-
-TIP: Store your SSH keys on a USB stick so you can use different computers to connect to your control instance.
-
-CAUTION: Remember to not use your root account when setting things up.  An Administrator IAM account is highly recommended.
-
-
-Ansible uses SSH so we need to verify SSH is working as required.
-
-. copy the private half of your SSH key to the control box
-. from the control box, ensure you can SSH into Alpha
-. from the control box, ensure you can SSH into Bravo
-. from the control box, ensure you can SSH into Charlie
-. from the control box, ensure you can SSH into Delta
-. stop all of your instances
-
-TIP: The `scp` command can be used to upload the key file.
-
-IMPORTANT: SSH is very picky about file permissions so remember to set the proper permissions on the key prior to use.
-
-.AWS Console
-image::aws-console.png[AWS Console]
-
-== Lab 02: Installing Ansible
-. Install the Ansible PPA on the Ansible control box.
-. Have Ansible print its version to verify the installation
-
-TIP: The video has the steps as does the Ansible documentation. The documentation is easier to follow.
-
-== Lab 03: Configuring Ansible
-. use the `ansible` command to apply the `ping` module to the `alpha` box.  Do *not* use a `hosts` or `ansible.cfg` file, specifying the information using command-line switches instead.
-. create an `ansible.cfg` file, specifying the location of your private SSH key
-. apply the `ping` module again, using the `ansible.cfg` file this time
-
-TIP: When specifying inventory on the command line, makes sure to have a trailing comma `,`
-
-TIP: Format of the configuration file http://docs.ansible.com/ansible/latest/intro_configuration.html[can be found here].
-
-TIP: Read the documentation to see exactly where configuration files are read from
-
-== Lab 04: Understanding Inventory
-. create a `hosts` file with two two groups.  One named `ubuntu` and one named `amazon`,  Put `alpha` and `bravo` in the `ubuntu` group and `charlie` and `delta` in the `amazon` group
-. apply the `ping` module again, using the `hosts` file this time
-. apply the `ping` module, but only to the `ubuntu` group
-. apply the `ping` module, but only to the `amazon` group
-. create a `blue` group with `alpha` and `charlie` as members and a `green` group with `bravo` and `delta` as members
-. apply the `ping` module, but only to the `blue` group
-. apply the `ping` module, but only to the `green` group
-. apply the `ping` module to the `all` group
-
-
-TIP: Remember, Ubuntu boxes use `ubuntu` as the user name and Amazon Linux uses `ec2-user`
-
-.Example Output
+.GET https://example.com/policies/9a9709e6-c3d7-48bf-b394-b3134b907872
 [source,json]
 ----
-alpha | SUCCESS => {
-    "changed": false,
-    "ping": "pong"
+{
+    "id": "https://example.com/policies/9a9709e6-c3d7-48bf-b394-b3134b907872",
+    "type": "automobile",
+    "holder-id": "https://example.com/users/1ccba180-d09f-4236-89db-d1987cbd55af",
+    "_links": {
+        "self": "https://example.com/policies/9a9709e6-c3d7-48bf-b394-b3134b907872",
+        "legacy-system-conversion": "https://example.com/legacy/transformations/9a9709e6-c3d7-48bf-b394-b3134b907872"
+    }
 }
 ----
+
+A message based service would use slightly different URLs but the idea remains the same.
+
+.amqp://rabbitmq.example.com/production/policies/9a9709e6-c3d7-48bf-b394-b3134b907872
+[source,json]
+----
+{
+    "id": "amqp://rabbitmq.example.com/production/policies/9a9709e6-c3d7-48bf-b394-b3134b907872",
+    "type": "automobile",
+    "holder-id": "amqp://rabbitmq.example.com/production/users/1ccba180-d09f-4236-89db-d1987cbd55af",
+    "_links": {
+        "self": "amqp://rabbitmq.example.com/production/policies/9a9709e6-c3d7-48bf-b394-b3134b907872",
+        "legacy-system-conversion": "amqp://rabbitmq.example.com/production/legacy/transformations/9a9709e6-c3d7-48bf-b394-b3134b907872"
+    }
+}
+----
+
+== Benefits and Trade-Offs
+=== Benefits
+One obvious benefit is that service discovery is eliminated.  The identifier contains enough context to point the client to the correct service.  Simply pull on the URL and you will get back enough information to initiate a deeper exchange.
+
+Another benefit manifests when combining formerly disparate systems or combining databases.  In a traditional system, you would likely have id collisions when combining data.  You can almost be guaranteed that both systems will have an entity with the id of `00001`.
+
+Integrating with external systems can be more easily managed using URLs.  Picture an internal identifier that points to a gateway that knows how to convert the internal identifier into calls to an external system.  The gateway can handle transformations and caching.
+
+=== Trade-Offs
+It would seem that dereferencing the identifier would be an expensive proposition adding unwanted latency to the service call chain, but Nygard reminds us that caching technology works very well.  If the data returned from the initial dereference contains mostly infrequently changing links to relevant services and operations, caches work great.  The application can cache a handful of recently accessed ids and fetch new ones from Redis.
+
+Security could be an issue when using URLs as identifiers.  Imagine a database gets compromised and the URLs are rewritten to point to an attacker's proxy, allowing him to perform all sort of mischief.
+
+== The Challenges
+URL Dualism appears to have more benefits than drawbacks but there is one challenge that still remains: how to keep the URLs stable and still migrate the data between systems and environments?  For example, if I'm developing on my laptop and want to debug using some data from a production system, how do I do that?  The identifiers are going to point production locations and not my local ones.  How do I share test databases between developers and testers?  Is it possible to combine data from two systems and not inadvertently introduce logical duplicates -- different identifiers but they point to effectively the same entity.
+
 
 == License and Credits
 This project is licensed under the https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode[Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License].
