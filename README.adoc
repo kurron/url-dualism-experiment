@@ -87,10 +87,10 @@ URL Dualism appears to have more benefits than drawbacks but there is one challe
 There are couple environments that I would like to experiment with, as I think each will present its own unique set of challenges and solutions.
 
 === Development
-The solutions I work on are primarily Docker based so I develop in a Linux virtual machine that has Docker installed.  Builds are done on CI/CD server using Docker, greatly reducing the typical issues keeping build environments current.
+The solutions I work on are primarily Docker based so I develop in a https://app.vagrantup.com/kurron/boxes/xenial-xubuntu[Linux virtual machine that has Docker and my development tools installed].  Builds are done on CI/CD server using Docker, greatly reducing the typical issues keeping build environments current.
 
 === Testing
-Testing is done in AWS.  The Docker containers are managed in a variety of ways:
+Testing is done in AWS and the Docker containers are managed in a variety of ways:
 
 * "by hand" using Ansible to spin up containers on well known instances
 * via https://aws.amazon.com/ecs/[ECS] where the cluster nodes are managed by Operations
