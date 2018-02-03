@@ -7,20 +7,32 @@
 :warning-caption: :warning:
 :caution-caption: :fire:
 
-= Ansible Study Group Labs
+= URL Dualism Experiment
 Ron Kurr <rkurr@jvmguy.com>
 
 
 toc::[]
 
 == Overview
-This project is a collection of hands on labs showcasing the use of Ansible.  Unlike other study groups, the learners will have to solve problems with minimal guidance.
+In the book https://pragprog.com/book/mnee2/release-it-second-edition[Release It! Second Edition: Design and Deploy Production-Ready Software] the author, Michael Nygard, introduces the concept of URL Dualism.  This project attempts to implement the concept in a variety environments, discussing trade-offs and challenges along the way.
 
-TIP: Each lab exercises what was showcased in the video assignments so many of your questions are probably already answered in the video.
+== Context
+There a few concepts and assumptions that need to be described before we can begin to analyze possible implementations of the URL Dualism pattern.
 
-IMPORTANT: Each lab builds on the prior ones, so if you are absent from a meeting you need to finish the lab before you can begin any new ones.
+=== Services Control Their Own Identifiers
+The assumption here is that we are working in a world of cooperating services that maintain their own state -- no shared databases.  If you need information, you go the service to get it.  When a new entity is introduced into the system, the service issues the identifier for it.
 
-== Prerequisites
+=== Explicit Context
+In the book, Nygard suggest the traditional identifiers are limiting to use in current architectures because they do not carry enough context to allow a client to locate the authoritative system.  Using a URL provides more context, giving the caller the ability to "tug" on the URL and get more information.
+
+.Identifier Comparison
+[source,json]
+----
+{
+    "typical-identifier": "9a9709e6-c3d7-48bf-b394-b3134b907872",
+    "explicit-context-identifier": "https://example.com/policies/9a9709e6-c3d7-48bf-b394-b3134b907872"
+}
+----
 
 * an https://aws.amazon.com/[AWS] account
 * an SSH client
