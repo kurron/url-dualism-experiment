@@ -76,12 +76,32 @@ Another benefit manifests when combining formerly disparate systems or combining
 Integrating with external systems can be more easily managed using URLs.  Picture an internal identifier that points to a gateway that knows how to convert the internal identifier into calls to an external system.  The gateway can handle transformations and caching.
 
 === Trade-Offs
-It would seem that dereferencing the identifier would be an expensive proposition adding unwanted latency to the service call chain, but Nygard reminds us that caching technology works very well.  If the data returned from the initial dereference contains mostly infrequently changing links to relevant services and operations, caches work great.  The application can cache a handful of recently accessed ids and fetch new ones from Redis.
+It would seem that dereferencing the identifier would be an expensive proposition adding unwanted latency to the service call chain, but Nygard reminds us that caching technology works very well.  If the data returned from the initial dereference contains mostly infrequently changing links to relevant services and operations, caches work great.  The application can cache a handful of recently accessed ids and fetch new ones from Redis as needed.
 
 Security could be an issue when using URLs as identifiers.  Imagine a database gets compromised and the URLs are rewritten to point to an attacker's proxy, allowing him to perform all sort of mischief.
 
 == The Challenges
 URL Dualism appears to have more benefits than drawbacks but there is one challenge that still remains: how to keep the URLs stable and still migrate the data between systems and environments?  For example, if I'm developing on my laptop and want to debug using some data from a production system, how do I do that?  The identifiers are going to point production locations and not my local ones.  How do I share test databases between developers and testers?  Is it possible to combine data from two systems and not inadvertently introduce logical duplicates -- different identifiers but they point to effectively the same entity.
+
+== Environments
+There are couple environments that I would like to experiment with, as I think each will present its own unique set of challenges and solutions.
+
+=== Development
+The solutions I work on are primarily Docker based so I develop in a Linux virtual machine that has Docker installed.  Builds are done on CI/CD server using Docker, greatly reducing the typical issues keeping build environments current.
+
+=== Testing
+Testing is done in AWS.  The Docker containers are managed in a variety of ways:
+
+* "by hand" using Ansible to spin up containers on well known instances
+* via https://aws.amazon.com/ecs/[ECS] where the cluster nodes are managed by Operations
+* via https://aws.amazon.com/fargate/[ECS Fargate] where the cluster nodes are managed by Amazon
+* via https://aws.amazon.com/eks/[EKS] where the data plane nodes are managed by Operations
+* via https://aws.amazon.com/fargate/[EKS Fargate] where the data plane nodes are managed by Amazon
+
+As you can see, control over the instances and networking varies depending on the scheduling solution being used.
+
+=== Production
+The production environment is a mirror of the testing environment and presents the same set of challenges.
 
 
 == License and Credits
