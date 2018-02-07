@@ -90,7 +90,7 @@ There are couple environments that I would like to experiment with, as I think e
 The solutions I work on are primarily Docker based so I develop in a https://app.vagrantup.com/kurron/boxes/xenial-xubuntu[Linux virtual machine that has Docker and my development tools installed].  Builds are done on CI/CD server using Docker, greatly reducing the typical issues keeping build environments current.
 
 === Testing
-Testing is done in AWS and the Docker containers are managed in a variety of ways:
+Testing is done in AWS with the Docker containers managed in a variety of ways:
 
 * "by hand" using Ansible to spin up containers on well known instances
 * via https://aws.amazon.com/ecs/[ECS] where the cluster nodes are managed by Operations
@@ -102,6 +102,18 @@ As you can see, control over the instances and networking varies depending on th
 
 === Production
 The production environment is a mirror of the testing environment and presents the same set of challenges.
+
+
+== How We Will Test
+We need to control DNS using different techniques, based on the scheduler being used.  The references will use the `example.com` and `example.org` reserved domains because they are guaranteed never to resolve without a proper configuration.  A simple HTTP application will be placed inside a container and will serve as the target service.  A test is successful if an upstream container can dereference the identifier and get back a JSON response.
+
+== By Hand Scheduling Using the Default Docker Bridge Network
+== By Hand Scheduling Using an Overlay Docker Network
+== Amazon ECS, Self-Managed Hosts
+== Amazon ECS, Fargate Managed Hosts
+== Amazon EKS, Self-Managed Hosts
+== Amazon EKS, Fargate Managed Hosts
+
 
 
 == License and Credits
